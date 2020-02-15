@@ -37,7 +37,6 @@ pub trait Semaphore: Sized {
     ///Returns `false` otherwise
     fn try_wait(&self) -> bool;
 
-
     ///Attempts to decrement self within provided time, returning whether self was signaled or not.
     ///
     ///Returns `true` if self was signaled within specified `timeout`
@@ -49,4 +48,36 @@ pub trait Semaphore: Sized {
     ///
     ///When self becomes greater than zero, waiter shall be woken and result is `true`
     fn post(&self) -> bool;
+
+    ///Gets semaphore's guard, which post on drop.
+    ///
+    ///Before guard is created, function will await for semaphore to get decremented.
+    fn lock(&self) -> SemaphoreGuard<'_, Self> {
+        self.wait();
+        SemaphoreGuard {
+            sem: self
+        }
+    }
+
+    ///Attempts to acquire semaphore's guard, which post on drop.
+    ///
+    ///If semaphore cannot be decremented at the current moment, returns `None`
+    fn try_lock(&self) -> Option<SemaphoreGuard<'_, Self>> {
+        match self.try_wait() {
+            true => Some(SemaphoreGuard {
+                sem: self,
+            }),
+            false => None,
+        }
+    }
+}
+
+pub struct SemaphoreGuard<'a, T: Semaphore> {
+    sem: &'a T,
+}
+
+impl<T: Semaphore> Drop for SemaphoreGuard<'_, T> {
+    fn drop(&mut self) {
+        self.sem.post();
+    }
 }
