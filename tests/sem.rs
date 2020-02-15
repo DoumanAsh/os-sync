@@ -1,5 +1,6 @@
 use os_sync::{Sem, Semaphore};
 
+#[cfg(not(any(target_os = "macos", target_os = "ios")))]
 #[test]
 fn should_return_when_signaled() {
     let sem = Sem::new(0).unwrap();
