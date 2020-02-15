@@ -1,5 +1,6 @@
 //! Wrappers over OS sync primitives
 
+#![no_std]
 #![warn(missing_docs)]
 #![cfg_attr(feature = "cargo-clippy", allow(clippy::style))]
 
