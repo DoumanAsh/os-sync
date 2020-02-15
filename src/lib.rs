@@ -4,4 +4,4 @@
 #![cfg_attr(feature = "cargo-clippy", allow(clippy::style))]
 
 mod sem;
-pub use sem::{Sem, Semaphore};
+pub use sem::{Sem, Semaphore, SemaphoreGuard};

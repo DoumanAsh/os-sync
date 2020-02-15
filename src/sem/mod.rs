@@ -72,6 +72,9 @@ pub trait Semaphore: Sized {
     }
 }
 
+///[Semaphore](trait.Semaphore.html) guard
+///
+///Increments(post) semaphore on drop.
 pub struct SemaphoreGuard<'a, T: Semaphore> {
     sem: &'a T,
 }
