@@ -56,17 +56,14 @@ impl super::Semaphore for Sem {
         }
     }
 
-    fn post(&self) -> Option<bool> {
+    fn post(&self) -> bool {
         let mut prev = 0;
-        let result = unsafe {
+        let res = unsafe {
             ReleaseSemaphore(self.handle, 1, &mut prev)
         };
 
-        if result != 0 {
-            Some(prev == 0)
-        } else {
-            None
-        }
+        debug_assert_ne!(res, 0);
+        prev == 0
     }
 }
 

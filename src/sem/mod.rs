@@ -37,9 +37,8 @@ pub trait Semaphore: Sized {
     ///Returns `false` otherwise
     fn try_wait(&self) -> bool;
 
-    ///Increments self, returns Some with result of incremention
-    ///Otherwise, returns None, meaning it is failed due to underlying OS error.
+    ///Increments self
     ///
     ///When self becomes greater than zero, waiter shall be woken and result is `true`
-    fn post(&self) -> Option<bool>;
+    fn post(&self) -> bool;
 }

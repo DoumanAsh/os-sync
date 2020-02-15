@@ -74,7 +74,7 @@ impl super::Semaphore for Sem {
         }
     }
 
-    fn post(&self) -> Option<bool> {
+    fn post(&self) -> bool {
         let mut val = 0;
         unsafe {
             libc::sem_getvalue(self.handle.get(), &mut val);
@@ -83,11 +83,9 @@ impl super::Semaphore for Sem {
         let res = unsafe {
             libc::sem_post(self.handle.get())
         };
+        debug_assert_eq!(res, 0);
 
-        match res {
-            0 => Some(val == 0),
-            _ => None,
-        }
+        val == 0
     }
 }
 
