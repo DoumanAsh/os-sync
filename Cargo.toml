@@ -1,0 +1,18 @@
+[package]
+name = "os-sync"
+version = "0.1.0"
+authors = ["Douman <douman@gmx.se>"]
+edition = "2018"
+description = "Wrappers over OS synchronization primitives"
+readme = "README.md"
+repository = "https://github.com/DoumanAsh/os-sync"
+license = "BSL-1.0"
+include = [
+    "**/*.rs",
+    "Cargo.toml",
+    "README.md"
+]
+
+[target.'cfg(all(unix, not(any(target_os = "macos", target_os = "ios"))))'.dependencies.libc]
+version = "0.2"
+default-features = false
