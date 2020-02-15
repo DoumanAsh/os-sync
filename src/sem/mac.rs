@@ -7,6 +7,17 @@ struct TimeSpec {
     tv_nsec: libc::c_int,
 }
 
+impl Into<TimeSpec> for core::time::Duration {
+    fn into(self) -> TimeSpec {
+        use core::convert::TryFrom;
+
+        TimeSpec {
+            tv_sec: libc::c_uint::try_from(self.as_secs()).unwrap_or(libc::c_uint::max_value()),
+            tv_nsec: libc::c_int::try_from(self.subsec_nanos()).unwrap_or(libc::c_int::max_value())
+        }
+    }
+}
+
 const KERN_OPERATION_TIMED_OUT: libc::c_int = 49;
 const SYNC_POLICY_FIFO: libc::c_int = 0;
 
@@ -53,9 +64,14 @@ impl super::Semaphore for Sem {
         debug_assert_eq!(result, 0, "semaphore_wait() failed");
     }
 
+    #[inline]
     fn try_wait(&self) -> bool {
+        self.wait_timeout(core::time::Duration::from_secs(0))
+    }
+
+    fn wait_timeout(&self, timeout: core::time::Duration) -> bool {
         let result = unsafe {
-            semaphore_timedwait(self.handle, mem::MaybeUninit::zeroed().assume_init())
+            semaphore_timedwait(self.handle, timeout.into())
         };
 
         debug_assert!(result == 0 || result == KERN_OPERATION_TIMED_OUT, "semaphore_timedwait() failed");

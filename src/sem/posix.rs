@@ -11,6 +11,8 @@ extern "C" {
 }
 
 ///POSIX implementation of Semaphore
+///
+///Note: `wait_timeout` returns false on interrupt by signal
 pub struct Sem {
     handle: UnsafeCell<libc::sem_t>,
 }
@@ -52,7 +54,7 @@ impl super::Semaphore for Sem {
     }
 
     fn try_wait(&self) -> bool {
-       loop {
+        loop {
             let res = unsafe {
                 libc::sem_trywait(self.handle.get())
             };
@@ -63,6 +65,37 @@ impl super::Semaphore for Sem {
                 };
 
                 if errno == libc::EAGAIN {
+                    break false;
+                }
+
+                debug_assert_eq!(errno, libc::EINTR, "Unexpected error");
+                continue;
+            }
+
+            break true
+        }
+    }
+
+    fn wait_timeout(&self, timeout: core::time::Duration) -> bool {
+        let timeout = libc::timespec {
+            tv_sec: timeout.as_secs() as libc::time_t,
+            #[cfg(target_pointer_width = "64")]
+            tv_nsec: libc::suseconds_t::from(timeout.subsec_nanos()),
+            #[cfg(not(target_pointer_width = "64"))]
+            tv_nsec: libc::suseconds_t::try_from(timeout.subsec_nanos()).unwrap_or(libc::suseconds_t::max_value()),
+        };
+
+        loop {
+            let res = unsafe {
+                libc::sem_timedwait(self.handle.get(), &timeout)
+            };
+
+            if res == -1 {
+                let errno = unsafe {
+                    *(errno_location())
+                };
+
+                if errno == libc::EAGAIN || errno == libc::EINTR {
                     break false;
                 }
 

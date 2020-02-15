@@ -44,9 +44,16 @@ impl super::Semaphore for Sem {
         }
     }
 
+    #[inline]
     fn try_wait(&self) -> bool {
+        self.wait_timeout(core::time::Duration::from_secs(0))
+    }
+
+    fn wait_timeout(&self, timeout: core::time::Duration) -> bool {
+        use core::convert::TryInto;
+
         let result = unsafe {
-            WaitForSingleObject(self.handle, 0)
+            WaitForSingleObject(self.handle, timeout.as_secs().try_into().unwrap_or(u32::max_value()))
         };
 
         match result {

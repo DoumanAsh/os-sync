@@ -37,6 +37,14 @@ pub trait Semaphore: Sized {
     ///Returns `false` otherwise
     fn try_wait(&self) -> bool;
 
+
+    ///Attempts to decrement self within provided time, returning whether self was signaled or not.
+    ///
+    ///Returns `true` if self was signaled within specified `timeout`
+    ///
+    ///Returns `false` otherwise
+    fn wait_timeout(&self, timeout: core::time::Duration) -> bool;
+
     ///Increments self
     ///
     ///When self becomes greater than zero, waiter shall be woken and result is `true`
