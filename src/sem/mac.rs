@@ -42,6 +42,8 @@ pub struct Sem {
 
 impl super::Semaphore for Sem {
     fn new(init: u32) -> Option<Self> {
+        debug_assert_ne(init, 0);
+
         let mut handle = mem::MaybeUninit::uninit();
 
         let res = unsafe {

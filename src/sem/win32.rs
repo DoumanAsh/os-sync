@@ -19,6 +19,8 @@ pub struct Sem {
 
 impl super::Semaphore for Sem {
     fn new(init: u32) -> Option<Self> {
+        debug_assert_ne(init, 0);
+
         let handle = unsafe {
             CreateSemaphoreW(ptr::null_mut(), init as i32, i32::max_value(), ptr::null())
         };
