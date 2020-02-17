@@ -17,7 +17,7 @@ pub use mac::Sem;
 
 ///Describes Semaphore interface
 ///
-///This primitive provides access to single integer that can be decremented using post
+///This primitive provides access to single integer that can be decremented using signal
 ///and incremented using wait
 pub trait Semaphore: Sized {
     ///Creates new instance, returning None on inability to do so.
@@ -27,7 +27,7 @@ pub trait Semaphore: Sized {
 
     ///Decrements self, returning immediately if it was signaled.
     ///
-    ///Otherwise awaits for `post`
+    ///Otherwise awaits for `signal`
     fn wait(&self);
 
     ///Attempts to decrement self, returning whether self was signaled or not.
@@ -47,9 +47,9 @@ pub trait Semaphore: Sized {
     ///Increments self
     ///
     ///When self becomes greater than zero, waiter shall be woken and result is `true`
-    fn post(&self) -> bool;
+    fn signal(&self) -> bool;
 
-    ///Gets semaphore's guard, which post on drop.
+    ///Gets semaphore's guard, which signal on drop.
     ///
     ///Before guard is created, function will await for semaphore to get decremented.
     fn lock(&self) -> SemaphoreGuard<'_, Self> {
@@ -59,7 +59,7 @@ pub trait Semaphore: Sized {
         }
     }
 
-    ///Attempts to acquire semaphore's guard, which post on drop.
+    ///Attempts to acquire semaphore's guard, which signal on drop.
     ///
     ///If semaphore cannot be decremented at the current moment, returns `None`
     fn try_lock(&self) -> Option<SemaphoreGuard<'_, Self>> {
@@ -74,13 +74,13 @@ pub trait Semaphore: Sized {
 
 ///[Semaphore](trait.Semaphore.html) guard
 ///
-///Increments(post) semaphore on drop.
+///Increments(signal) semaphore on drop.
 pub struct SemaphoreGuard<'a, T: Semaphore> {
     sem: &'a T,
 }
 
 impl<T: Semaphore> Drop for SemaphoreGuard<'_, T> {
     fn drop(&mut self) {
-        self.sem.post();
+        self.sem.signal();
     }
 }

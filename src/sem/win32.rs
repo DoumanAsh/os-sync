@@ -63,7 +63,7 @@ impl super::Semaphore for Sem {
         }
     }
 
-    fn post(&self) -> bool {
+    fn signal(&self) -> bool {
         let mut prev = 0;
         let res = unsafe {
             ReleaseSemaphore(self.handle, 1, &mut prev)

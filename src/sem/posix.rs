@@ -107,7 +107,7 @@ impl super::Semaphore for Sem {
         }
     }
 
-    fn post(&self) -> bool {
+    fn signal(&self) -> bool {
         let mut val = 0;
         unsafe {
             libc::sem_getvalue(self.handle.get(), &mut val);

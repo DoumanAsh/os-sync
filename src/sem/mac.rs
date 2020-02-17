@@ -35,7 +35,7 @@ extern "C" {
 
 ///MacOS semaphore based on mach API
 ///
-///Due to limitation of mach API, post always returns `true`
+///Due to limitation of mach API, signal always returns `true`
 pub struct Sem {
     handle: *mut c_void,
 }
@@ -78,7 +78,7 @@ impl super::Semaphore for Sem {
         result == 0
     }
 
-    fn post(&self) -> bool {
+    fn signal(&self) -> bool {
         let res = unsafe {
             semaphore_signal(self.handle)
         };
