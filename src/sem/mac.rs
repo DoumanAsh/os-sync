@@ -35,15 +35,13 @@ extern "C" {
 
 ///MacOS semaphore based on mach API
 ///
-///Due to limitation of mach API, signal always returns `true`
+///Due to limitation of mach API, signal always returns `false` as it cannot know
 pub struct Sem {
     handle: *mut c_void,
 }
 
 impl super::Semaphore for Sem {
     fn new(init: u32) -> Option<Self> {
-        debug_assert_ne(init, 0);
-
         let mut handle = mem::MaybeUninit::uninit();
 
         let res = unsafe {
@@ -80,13 +78,18 @@ impl super::Semaphore for Sem {
         result == 0
     }
 
-    fn signal(&self) -> bool {
+    fn signal(&self) {
         let res = unsafe {
             semaphore_signal(self.handle)
         };
 
         debug_assert_eq!(res, 0);
-        true
+    }
+
+    #[inline]
+    fn post(&self) -> bool {
+        self.signal();
+        false
     }
 }
 

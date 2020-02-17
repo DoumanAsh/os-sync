@@ -44,10 +44,11 @@ pub trait Semaphore: Sized {
     ///Returns `false` otherwise
     fn wait_timeout(&self, timeout: core::time::Duration) -> bool;
 
-    ///Increments self
-    ///
-    ///When self becomes greater than zero, waiter shall be woken and result is `true`
-    fn signal(&self) -> bool;
+    ///Increments self, whether another thread has been woken as result.
+    fn post(&self) -> bool;
+
+    ///Increments self, waking any awaiting thread as result
+    fn signal(&self);
 
     ///Gets semaphore's guard, which signal on drop.
     ///

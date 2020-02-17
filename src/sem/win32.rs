@@ -19,8 +19,6 @@ pub struct Sem {
 
 impl super::Semaphore for Sem {
     fn new(init: u32) -> Option<Self> {
-        debug_assert_ne(init, 0);
-
         let handle = unsafe {
             CreateSemaphoreW(ptr::null_mut(), init as i32, i32::max_value(), ptr::null())
         };
@@ -65,7 +63,14 @@ impl super::Semaphore for Sem {
         }
     }
 
-    fn signal(&self) -> bool {
+    fn signal(&self) {
+        let res = unsafe {
+            ReleaseSemaphore(self.handle, 1, ptr::null_mut())
+        };
+        debug_assert_ne!(res, 0);
+    }
+
+    fn post(&self) -> bool {
         let mut prev = 0;
         let res = unsafe {
             ReleaseSemaphore(self.handle, 1, &mut prev)

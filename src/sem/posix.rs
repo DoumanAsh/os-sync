@@ -19,8 +19,6 @@ pub struct Sem {
 
 impl super::Semaphore for Sem {
     fn new(init: u32) -> Option<Self> {
-        debug_assert_ne(init, 0);
-
         let mut handle = mem::MaybeUninit::uninit();
 
         let res = unsafe {
@@ -109,16 +107,20 @@ impl super::Semaphore for Sem {
         }
     }
 
-    fn signal(&self) -> bool {
+    fn signal(&self) {
+        let res = unsafe {
+            libc::sem_post(self.handle.get())
+        };
+        debug_assert_eq!(res, 0);
+    }
+
+    fn post(&self) -> bool {
         let mut val = 0;
         unsafe {
             libc::sem_getvalue(self.handle.get(), &mut val);
         }
 
-        let res = unsafe {
-            libc::sem_post(self.handle.get())
-        };
-        debug_assert_eq!(res, 0);
+        self.signal();
 
         val == 0
     }
