@@ -1,4 +1,4 @@
-use os_sync::SemMutex;
+use os_sync::{Mutex, SemMutex};
 use core::sync::atomic::{AtomicBool, Ordering};
 
 #[test]

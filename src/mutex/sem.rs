@@ -10,12 +10,9 @@ pub struct Mutex<T> {
     count: AtomicU32,
 }
 
-impl<T: Semaphore> Mutex<T> {
+impl<T: Semaphore> super::Mutex for Mutex<T> {
     #[inline]
-    ///Creates new instance
-    ///
-    ///Returns if `Semaphore` is successfully created.
-    pub fn new() -> Option<Self> {
+    fn new() -> Option<Self> {
         Some(Self {
             sem: T::new(0)?,
             count: AtomicU32::new(0),
@@ -23,27 +20,21 @@ impl<T: Semaphore> Mutex<T> {
     }
 
     #[inline]
-    ///Acquires lock, returning guard that unlocks self on drop.
-    ///
-    ///If lock is already acquired, it blocks until mutex is unlocked
-    pub fn lock(&self) -> MutexGuard<'_, T> {
+    fn lock(&self) -> super::MutexGuard<'_, Self> {
         if self.count.fetch_add(1, Ordering::AcqRel) > 0 {
             self.sem.wait();
         }
 
-        MutexGuard {
+        super::MutexGuard {
             mutex: self,
         }
     }
 
-    ///Attempts to acquire lock, returning guard that unlocks self on drop.
-    ///
-    ///If lock is already acquired, it returns `None`
-    pub fn try_lock(&self) -> Option<MutexGuard<'_, T>> {
+    fn try_lock(&self) -> Option<super::MutexGuard<'_, Self>> {
         if self.count.compare_and_swap(0, 1, Ordering::AcqRel) > 0 {
             None
         } else {
-            Some(MutexGuard {
+            Some(super::MutexGuard {
                 mutex: self,
             })
         }
@@ -56,16 +47,5 @@ impl<T: Semaphore> Mutex<T> {
         debug_assert_ne!(old_count, 0);
 
         self.sem.signal()
-    }
-}
-
-///Guard, created by locking Mutex.
-pub struct MutexGuard<'a, T: Semaphore> {
-    mutex: &'a Mutex<T>
-}
-
-impl<T: Semaphore> Drop for MutexGuard<'_, T> {
-    fn drop(&mut self) {
-        self.mutex.unlock();
     }
 }

@@ -8,5 +8,6 @@ mod sem;
 pub use sem::{Sem, Semaphore, SemaphoreGuard};
 
 pub mod mutex;
+pub use mutex::Mutex;
 ///Alias to [SemMutex](mutex/struct.SemMutex.html) with default [Semaphore](sem/trait.Semaphore.html) implementation
 pub type SemMutex = mutex::SemMutex<Sem>;
