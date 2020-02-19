@@ -3,6 +3,10 @@
 mod sem;
 pub use sem::Mutex as SemMutex;
 
+///Token passed by [MutexGuard](struct.MutexGuard.html)
+pub struct GuardToken {
+}
+
 ///Describes Mutex interface
 pub trait Mutex: Sized {
     ///Creates new instance
@@ -24,7 +28,7 @@ pub trait Mutex: Sized {
     ///
     ///Method implementation should be safe, but is allowed to mis-behave when invoked without
     ///prior `lock`
-    fn unlock(&self);
+    fn unlock(&self, token: GuardToken);
 }
 
 ///Guard, created by locking Mutex.
@@ -34,6 +38,6 @@ pub struct MutexGuard<'a, T: Mutex> {
 
 impl<T: Mutex> Drop for MutexGuard<'_, T> {
     fn drop(&mut self) {
-        self.mutex.unlock();
+        self.mutex.unlock(GuardToken {});
     }
 }

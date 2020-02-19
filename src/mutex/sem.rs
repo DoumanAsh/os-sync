@@ -40,7 +40,7 @@ impl<T: Semaphore> super::Mutex for Mutex<T> {
         }
     }
 
-    fn unlock(&self) {
+    fn unlock(&self, _: super::GuardToken) {
         let old_count = self.count.fetch_sub(1, Ordering::AcqRel);
 
         //This is not possible for user as he only uses guard
