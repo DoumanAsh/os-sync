@@ -44,7 +44,7 @@ pub trait Semaphore: Sized {
     ///Returns `false` otherwise
     fn wait_timeout(&self, timeout: core::time::Duration) -> bool;
 
-    ///Increments self, whether another thread has been woken as result.
+    ///Increments self, returning whether another thread has been woken as result.
     fn post(&self) -> bool;
 
     ///Increments self, waking any awaiting thread as result
