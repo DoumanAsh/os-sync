@@ -8,7 +8,7 @@
 macro_rules! unreach {
     () => ({
         unsafe {
-            std::hint::unreachable_unchecked();
+            core::hint::unreachable_unchecked();
         }
     })
 }
