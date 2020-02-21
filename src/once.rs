@@ -59,10 +59,14 @@ impl Once {
     ///
     ///Note that if function panics, `Once` is considered finished.
     pub fn call_once<F: FnOnce()>(&self, cb: F) {
+        if self.is_completed() {
+            return;
+        }
+
         let mut cb = Some(cb);
         self.call_inner(move || match cb.take() {
             Some(cb) => cb(),
-            None => unreachable!()
+            None => unreach!()
         });
     }
 
@@ -72,6 +76,13 @@ impl Once {
         self.state.load(Ordering::Acquire) == COMPLETE
     }
 
+    #[cold]
+    fn call_inner_fail(&self) -> ! {
+        self.state.store(FAIL, Ordering::Acquire);
+        panic!(FAIL_MSG)
+    }
+
+    #[cold]
     fn call_inner<F: FnMut()>(&self, mut cb: F) {
         loop {
             match self.state.load(Ordering::Acquire) {
@@ -84,10 +95,7 @@ impl Once {
 
                     let sem = match Sem::new(0) {
                         Some(sem) => sem,
-                        None => {
-                            self.state.store(FAIL, Ordering::Acquire);
-                            panic!(FAIL_MSG);
-                        }
+                        None => self.call_inner_fail(),
                     };
 
                     let mut sem_guard = SemGuard {

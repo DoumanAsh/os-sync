@@ -4,6 +4,22 @@
 #![warn(missing_docs)]
 #![cfg_attr(feature = "cargo-clippy", allow(clippy::style))]
 
+#[cfg(not(debug_assertions))]
+macro_rules! unreach {
+    () => ({
+        unsafe {
+            std::hint::unreachable_unchecked();
+        }
+    })
+}
+
+#[cfg(debug_assertions)]
+macro_rules! unreach {
+    () => ({
+        unreachable!()
+    })
+}
+
 mod sem;
 pub use sem::{Sem, Semaphore, SemaphoreGuard};
 
