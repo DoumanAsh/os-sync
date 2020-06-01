@@ -1,4 +1,4 @@
-//! Wrappers over OS sync primitives
+//! Simple synchronization primitives based on OS semaphore.
 
 #![no_std]
 #![warn(missing_docs)]

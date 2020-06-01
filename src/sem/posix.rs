@@ -1,14 +1,7 @@
 use core::cell::UnsafeCell;
 use core::mem;
 
-extern "C" {
-    #[cfg(not(target_os = "dragonfly"))]
-    #[cfg_attr(any(target_os = "macos", target_os = "ios", target_os = "freebsd"), link_name = "__error")]
-    #[cfg_attr(any(target_os = "openbsd", target_os = "netbsd", target_os = "bitrig", target_os = "android"), link_name = "__errno")]
-    #[cfg_attr(target_os = "solaris", link_name = "___errno")]
-    #[cfg_attr(target_os = "linux", link_name = "__errno_location")]
-    fn errno_location() -> *mut i32;
-}
+use error_code::PosixError;
 
 ///POSIX implementation of Semaphore
 ///
@@ -42,10 +35,8 @@ impl super::Semaphore for Sem {
             };
 
             if res == -1 {
-                let errno = unsafe {
-                    *(errno_location())
-                };
-                debug_assert_eq!(errno, libc::EINTR, "Unexpected error");
+                let errno = PosixError::last();
+                debug_assert_eq!(errno.raw_code(), libc::EINTR, "Unexpected error");
                 continue;
             }
 
@@ -60,15 +51,12 @@ impl super::Semaphore for Sem {
             };
 
             if res == -1 {
-                let errno = unsafe {
-                    *(errno_location())
-                };
-
-                if errno == libc::EAGAIN {
+                let errno = PosixError::last();
+                if errno.is_would_block() {
                     break false;
                 }
 
-                debug_assert_eq!(errno, libc::EINTR, "Unexpected error");
+                debug_assert_eq!(errno.raw_code(), libc::EINTR, "Unexpected error");
                 continue;
             }
 
@@ -91,15 +79,12 @@ impl super::Semaphore for Sem {
             };
 
             if res == -1 {
-                let errno = unsafe {
-                    *(errno_location())
-                };
-
-                if errno == libc::EAGAIN || errno == libc::EINTR {
+                let errno = PosixError::last();
+                if errno.is_would_block() || errno.raw_code() == libc::ETIMEDOUT {
                     break false;
                 }
 
-                debug_assert_eq!(errno, libc::EINTR, "Unexpected error");
+                debug_assert_eq!(errno.raw_code(), libc::EINTR, "Unexpected error");
                 continue;
             }
 
