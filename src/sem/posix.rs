@@ -1,5 +1,6 @@
 use core::cell::UnsafeCell;
 use core::mem;
+use core::convert::TryFrom;
 
 use error_code::PosixError;
 
