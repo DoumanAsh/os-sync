@@ -1,5 +1,6 @@
 use core::ffi::c_void;
 use core::mem;
+use core::convert::TryFrom;
 
 #[repr(C)]
 struct TimeSpec {
